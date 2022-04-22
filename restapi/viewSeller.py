@@ -91,10 +91,23 @@ class SelProductView(APIView):
         idt =data.get("id")
         usr=request.user.id
 
+        # pic= None
+        # pic1 =None
+        # pic2= None
+        # pic3= None
+        
         pic= data.get("pic")
-        pic1 =data.get("pic1")
+        # pic1 = data.get("pic1")
         pic2= data.get("pic2")
         pic3= data.get("pic3")
+
+        pic1 = request.FILES['pic1']
+
+                
+        print(pic)
+        print(pic1)
+        print(pic2)
+        print(pic3)
         
         cus = Product.objects.get(pk=idt)
         new_prod = {
@@ -108,23 +121,11 @@ class SelProductView(APIView):
             "upload": usr,
         }
 
-        # print(new_profile)
+
         serializer = AddProductSer(cus, data=new_prod) 
         serializer.is_valid(raise_exception=True)
-
-        print(pic)
-        print(pic1)
-        print(pic2)
-        print(pic3)
-        man=0
         
-        if data.get("pic") ==None:
-            man=
-        
-        if pic ==None and pic1 == None and pic2 ==None  and pic3 == None :
-            
-            print(cus.pic)
-            Product.objects.update_or_create(id=idt,upload=usr, defaults= {
+        Product.objects.update_or_create(id=idt,upload=usr, defaults= {
             "title": data.get("title"),
             "description": data.get("description"),
             "salesPrice": data.get("salesPrice"),
@@ -132,29 +133,20 @@ class SelProductView(APIView):
             "stock": data.get("stock"),
             "category": data.get("category"),
             "offers": data.get("offers"), 
-            "pic":cus.pic,"pic1":cus.pic1,"pic2":cus.pic2,"pic3":pic3         
-        })
-            print('yes')
-            prod = Product.objects.filter(upload=request.user)
-            ser = ProductSer(prod, many=True)
-            return Response(
+            "pic":cus.pic if pic ==None else pic ,"pic1":cus.pic1  if pic1 ==None else pic1,"pic2":cus.pic2 if pic2 ==None else pic2  ,"pic3":cus.pic3 if pic3 ==None else pic3 
+            })  
+       
+           
+        prod = Product.objects.filter(upload=request.user)
+        ser = ProductSer(prod, many=True)
+        return Response(
                 {   'success':1,
                     "stateCode": 200,
                     "msg": "Enter  data", "data":ser.data
                 }
             )
         
-        # else if :
-
-
-
-        # print(serializer)
-        # if serializer.is_valid(raise_exception=True):
-        #     serializer.save()
-        #     user = serializer.save()
-        
-        # return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-    
+       
     # ! Delete 
     def delete(self, request,pk=None):
         idt = request.data.get("id")

@@ -232,14 +232,15 @@ class ProfileView(APIView):
         pic=request.data.get('pic')
    
         # print(pic)
-        if pic is not None:
+        # if pic is not None:
             
-            mat = Profile.objects.update_or_create(id=request.user.id,upload= request.user, defaults={'fullname':fullname,'gender':gender,'pic':pic})
+        #     mat = Profile.objects.update_or_create(id=request.user.id,upload= request.user, defaults={'fullname':fullname,'gender':gender,'pic':pic})
        
-        else:
-            cus=Profile.objects.get(upload=request.user)
+        # else:
+        #     cus=Profile.objects.get(upload=request.user)
          
-            mat = Profile.objects.update_or_create(id=request.user.id,upload=request.user, defaults={'fullname':fullname,'gender':gender,'pic':cus.pic})
+        #     mat = Profile.objects.update_or_create(id=request.user.id,upload=request.user, defaults={'fullname':fullname,'gender':gender,'pic':cus.pic})
+        Profile.objects.update_or_create(id=request.user.id,upload=request.user, defaults={'fullname':fullname,'gender':gender,'pic':cus.pic if pic==None else pic })
         
         profile = Profile.objects.filter(upload=request.user)
         ser = ProfileSer(profile, many=True)
