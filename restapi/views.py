@@ -380,11 +380,11 @@ class CartView(APIView):
  
     def get(self, request):
         data = request.data
-        usr = request.user
+        # usr = request.user
         
         
-        usrCart = CartProduct.objects.filter(upload=usr.id)
-        cartProf= ProfileCart.objects.filter(upload=usr.id)
+        usrCart = CartProduct.objects.filter(upload=request.user.id)
+        cartProf= ProfileCart.objects.filter(upload=request.user.id)
       
         # print(usrCart)
         try:
@@ -404,20 +404,20 @@ class CartView(APIView):
 
     def post(self, request):
         data = request.data
-        usr = str(request.user.id) 
+
         # usr= data.get("customerCart")
        
         newCart = {
             # "quantity": data.get("quantity"),
             "quantity":1,
             "product": data.get("product"),
-            "upload": str(usr),
+            "upload": str(request.user.id),
             
         }
     
 
         if CartProduct.objects.filter(
-            Q(upload__exact=usr)
+            Q(upload__exact=request.user.id)
             & Q(product__exact=data.get("product"))
         ):
             return Response({  'success':0  ,"stateCode": 201, "msg": "Product Allready Exits"}, 201)
@@ -436,7 +436,7 @@ class CartView(APIView):
             return Response(
                 {   'success':1,
                     "stateCode": 200,
-                    "msg": "enter data",
+                    "msg": "Add Product in Cart",
                     "data":ser.data, "priceData":profSer.data ,
                 }
             )
@@ -467,7 +467,7 @@ class CartView(APIView):
             return Response(
                 {   'success':1, 
                     "stateCode": 200,
-                    "msg": "enter data", "data":ser.data, "priceData":profSer.data ,
+                    "msg": "Add Product in Cart", "data":ser.data, "priceData":profSer.data ,
                 }
             )
         return Response( {"data": serializer.errors,'success': 0, } ,status=HTTP_400_BAD_REQUEST)
@@ -510,11 +510,11 @@ class WishListView(APIView):
  
     def get(self, request):
         data = request.data
-        usr = request.user
+        # usr = request.user
         
         
-        usrCart = WishListProduct.objects.filter(upload=usr.id)
-        cartProf= ProfileWishList.objects.filter(upload=usr.id)
+        usrCart = WishListProduct.objects.filter(upload=request.user.id)
+        cartProf= ProfileWishList.objects.filter(upload=request.user.id)
       
         # print(usrCart)
         try:
@@ -534,22 +534,22 @@ class WishListView(APIView):
 
     def post(self, request):
         data = request.data
-        usr = str(request.user.id) 
+        # usr = str(request.user.id) 
         # usr= data.get("customerCart")
        
         newdata = {
-            "quantity": data.get("quantity"),
+            "quantity":1,
             "product": data.get("product"),
-            "upload": str(usr),
+            "upload": str(request.user.id),
             
         }
     
 
         if WishListProduct.objects.filter(
-            Q(upload__exact=usr)
+            Q(upload__exact=request.user.id)
             & Q(product__exact=data.get("product"))
         ):
-            return Response({  'success':0  ,"stateCode": 201, "msg": "Product Allready Exits"}, 201)
+            return Response({  'success':0  ,"stateCode": 201, "msg": "Product Already Exits"}, 201)
         
         serializer = AddWishListSer(data=newdata)
         
@@ -560,22 +560,26 @@ class WishListView(APIView):
             return Response(
                 {   'success':1,
                     "stateCode": 200,
-                    "msg": "enter data",
+                    "msg": "Add Product in WishList",
                 }
             )
         return Response( { "data": serializer.errors, 'success': 0, } ,status=HTTP_400_BAD_REQUEST)
 
     # orc QUANTITY UPDATE 
     def put(self, request, pk=None):
-        data = request.data
-        idt = request.data.get("id")
-        cus = WishListProduct.objects.get(pk=idt)
+        # data = request.data
+        # idt = request.data.get("id")
+        # cus = WishListProduct.objects.get(pk=idt)
         
-        new_cartu = {
-            "quantity": data.get("quantity"),
-        }
-        serializer = UpdateWishListSer(cus, data=new_cartu)
-
+        # new_cartu = {
+        #     "quantity": data.get("quantity"),
+        # }
+        # serializer = UpdateWishListSer(cus, data=new_cartu)
+        if CartProduct.objects.filter(
+            Q(upload__exact=request.user)
+            & Q(product__exact=data.get("product"))
+        ):
+            return Response({  'success':0  ,"stateCode": 201, "msg": "Product Allready Exits"}, 201)
       
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -594,11 +598,17 @@ class WishListView(APIView):
         idt= request.data.get("id") 
         cus = WishListProduct.objects.get(pk=idt)
         # print(cus)
+        if CartProduct.objects.filter(Q(upload__exact=request.user) & Q(product__exact=cus.product.id )):
+                usrCart = WishListProduct.objects.filter(upload=request.user.id)
+                ser = WishListSer(usrCart,many=True)
+                return Response({ "data":ser.data, 'success':1,"stateCode": 200, "msg": "Product Already Exits"},201)
         if WishListProduct.objects.filter(pk=idt).exists():
                 card = WishListProduct.objects.get(pk=idt)
-                
                 card.delete()
-                res = {  'success':1, "msg": "data delete"}
+
+                usrCart = WishListProduct.objects.filter(upload=request.user.id)
+                ser = WishListSer(usrCart,many=True)
+                res = { "data":ser.data, 'success':1, "msg": "data delete"}
                 return Response(res)
         
         else:

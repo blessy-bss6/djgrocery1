@@ -92,6 +92,11 @@ class CartProfileAdmin(admin.ModelAdmin):
       list_display = ("id", "upload",  "ammount","totalAmmount" ,'get_cartList' )
 
 
+# ! WishList 
+# Cart Product ADMIN
+@admin.register(WishListProduct)
+class WishListProductAdmin(admin.ModelAdmin):
+    list_display = ("id", "upload","product", "quantity","salesPrice","discountPrice")
 
 
 

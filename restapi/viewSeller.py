@@ -97,11 +97,11 @@ class SelProductView(APIView):
         # pic3= None
         
         pic= data.get("pic")
-        # pic1 = data.get("pic1")
+        pic1 = data.get("pic1")
         pic2= data.get("pic2")
         pic3= data.get("pic3")
 
-        pic1 = request.FILES['pic1']
+        # pic1 = request.FILES['pic1']
 
                 
         print(pic)
@@ -124,7 +124,8 @@ class SelProductView(APIView):
 
         serializer = AddProductSer(cus, data=new_prod) 
         serializer.is_valid(raise_exception=True)
-        
+
+        print('idt')
         Product.objects.update_or_create(id=idt,upload=usr, defaults= {
             "title": data.get("title"),
             "description": data.get("description"),
@@ -136,13 +137,14 @@ class SelProductView(APIView):
             "pic":cus.pic if pic ==None else pic ,"pic1":cus.pic1  if pic1 ==None else pic1,"pic2":cus.pic2 if pic2 ==None else pic2  ,"pic3":cus.pic3 if pic3 ==None else pic3 
             })  
        
-           
-        prod = Product.objects.filter(upload=request.user)
-        ser = ProductSer(prod, many=True)
+        
+        # prod = Product.objects.filter(upload=request.user)
+        # ser = ProductSer(prod, many=True)
         return Response(
                 {   'success':1,
                     "stateCode": 200,
-                    "msg": "Enter  data", "data":ser.data
+                    "msg": "Enter  data",
+                    #  "data":ser.data
                 }
             )
         
@@ -156,7 +158,9 @@ class SelProductView(APIView):
                 prd = Product.objects.filter(pk=idt)
               
                 prd.delete()
-                res = {   'success':1 , "msg": "data delete"}
+                prod2 = Product.objects.filter(upload=request.user)
+                ser = ProductSer(prod2, many=True)
+                res = {   'success':1 , "msg": " product delete" ,   "data":ser.data}
             else:
                 res = {'success': 0, "msg": " not have any data"}
 
