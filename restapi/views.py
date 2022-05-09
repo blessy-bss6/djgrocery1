@@ -260,7 +260,7 @@ class AddressView(APIView):
 
     # todo  GET METHOD
     def get(self, request):
-        usr = request.user
+        usr = request.user.id
         addres = Address.objects.filter(upload=usr)
         
 
@@ -316,6 +316,16 @@ class AddressView(APIView):
         data = request.data
         idt =data.get("id")
         usr=request.user.id
+        print(idt) 
+
+        if idt ==None:
+            return Response(
+                {   'success':0,
+                    "stateCode": 404,
+                    "msg": "Address Id Not Found",
+                }
+            )
+
         
         cus = Address.objects.get(pk=idt)
         new_address = {
@@ -563,7 +573,8 @@ class WishListView(APIView):
                     "msg": "Add Product in WishList",
                 }
             )
-        return Response( { "data": serializer.errors, 'success': 0, } ,status=HTTP_400_BAD_REQUEST)
+        # return Response( { "data": serializer.errors, 'success': 0, } ,status=HTTP_400_BAD_REQUEST)
+        return Response( { "data": serializer.errors, 'success': 0, } ,401)
 
     # orc QUANTITY UPDATE 
     def put(self, request, pk=None):
@@ -629,33 +640,44 @@ class OrderView(APIView):
     # !  ORDER REQUEST DATA
     def post(self, request):
         data = request.data
-       
-        usr=request.user
-    
-
         cart=CartProduct.objects.filter(upload=request.user.id)
-        
-        for i in cart:
-            new_order = {
-               "product": i.product.id,
-                "address": data.get("address"),
-                "quantity": i.quantity,
-                "customer": request.user.id,
-                "seller": i.product.upload.id  }
-            
+        cartProf =ProfileCart.objects.filter(upload= request.user.id)
+        print(cart)
 
-            serializer = AddOrderSer(data=new_order)
+        # while True:
+        #     new_order = {
+        #         "product": i.product.id,
+        #         "address": data.get("address"),
+        #         "quantity": i.quantity,
+        #         "customer": request.user.id,
+        #         "seller": i.product.upload.id  }
+
+        
+        # for i in cart:
+            # new_order = {
+            #     "product": i.product.id,
+            #     "address": data.get("address"),
+            #     "quantity": i.quantity,
+            #     "customer": request.user.id,
+            #     "seller": i.product.upload.id  }
             
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                user = serializer.save()
-                return Response(
-                    { 'success':1, 
-                    "stateCode": 200,
-                    "msg": "enter data",
-                    }
-                )
-            return Response( {   'success': 0,"data" :serializer.errors, } )
+            # print(new_order)
+            
+        print(cartProf)
+        # print(cartProf)
+        print(cart.length)
+            # serializer = AddOrderSer(data=new_order)
+            
+            # if serializer.is_valid(raise_exception=True):
+            #     serializer.save()
+            #     user = serializer.save()
+            #     return Response(
+            #         { 'success':1, 
+            #         "stateCode": 200,
+            #         "msg": "enter data",
+            #         }
+            #     )
+        return Response( {   'success': 0,"data" :serializer.errors, } )
 
         # return Response('Order Wrong', )
 

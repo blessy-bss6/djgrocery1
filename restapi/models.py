@@ -8,7 +8,7 @@ import uuid
 from django.urls import reverse
 from django.core.validators import RegexValidator
 from django.contrib.auth.hashers import make_password
-
+from django.conf import settings
 
  
 
@@ -253,6 +253,7 @@ class CartProduct(models.Model):
 class ProfileCart(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
     upload=models.OneToOneField(CustomUser,on_delete=models.CASCADE,null=True,blank=True)
+    cartUpload=models.ForeignKey(CartProduct, on_delete=models.CASCADE, blank=True, null=True)
     ammount =  models.FloatField(default=0)
     shipPrice =  models.FloatField(default=50)
     totalAmmount =  models.FloatField(default=0)
@@ -340,101 +341,171 @@ class ProfileWishList(models.Model):
 
 
 # !ORDER BASE CLASS
-class BaseOrder(models.Model):
-    customer = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
-    seller=models.ForeignKey(ProfileSeller, on_delete=models.CASCADE, null=True,
-        blank=True)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now_add=True)
-    quantity = models.PositiveIntegerField(default=1)
-    ammount = models.PositiveIntegerField()
-    shipPrice = models.PositiveIntegerField(default=50)
-    totalAmmount = models.PositiveIntegerField(default=0)
+# class BaseOrder(models.Model):
+#     customer = models.ForeignKey(Profile, on_delete=models.CASCADE)
+#     product = models.ForeignKey(
+#         Product,
+#         on_delete=models.CASCADE,
+#         null=True,
+#         blank=True,
+#     )
+#     seller=models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,
+#         blank=True)
+#     address = models.ForeignKey(Address, on_delete=models.CASCADE)
+#     date = models.DateTimeField(auto_now_add=True)
+#     quantity = models.PositiveIntegerField(default=1)
+#     ammount = models.PositiveIntegerField()
+#     shipPrice = models.PositiveIntegerField(default=50)
+#     totalAmmount = models.PositiveIntegerField(default=0)
 
-    # ! this method add ammount value is
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.ammount = self.product.discountPrice * self.quantity
-            if self.ammount > 499:
-                self.shipPrice = 0
-                self.totalAmmount = self.ammount + self.shipPrice
-            else:
-                self.shipPrice = 70
-                self.totalAmmount = self.ammount + self.shipPrice
-        else:
-            self.ammount = self.product.discountPrice * self.quantity
-            if self.ammount > 499:
-                self.shipPrice = 0
-                self.totalAmmount = self.ammount + self.shipPrice
-            else:
-                self.shipPrice = 70
-                self.totalAmmount = self.ammount + self.shipPrice
+#     # ! this method add ammount value is
+#     def save(self, *args, **kwargs):
+#         if not self.pk:
+#             self.ammount = self.product.discountPrice * self.quantity
+#             if self.ammount > 499:
+#                 self.shipPrice = 0
+#                 self.totalAmmount = self.ammount + self.shipPrice
+#             else:
+#                 self.shipPrice = 70
+#                 self.totalAmmount = self.ammount + self.shipPrice
+#         else:
+#             self.ammount = self.product.discountPrice * self.quantity
+#             if self.ammount > 499:
+#                 self.shipPrice = 0
+#                 self.totalAmmount = self.ammount + self.shipPrice
+#             else:
+#                 self.shipPrice = 70
+#                 self.totalAmmount = self.ammount + self.shipPrice
 
-        return super().save(*args, **kwargs)
+#         return super().save(*args, **kwargs)
 
-    def __str__(self):
-        return str(self.id)
+#     def __str__(self):
+#         return str(self.id)
 
-    class Meta:
-        abstract = True
+#     class Meta:
+#         abstract = True   
 
 
 
-# ! All Order 
-class Order(BaseOrder):
+# # ! All Order 
+# class Order(BaseOrder):
+#     id = models.UUIDField(
+#         primary_key=True,
+#         editable=False,
+#         default=uuid.uuid4,
+#     )
+#     # customer = models.ForeignKey(Profile, on_delete=models.CASCADE)
+#     # seller=models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,blank=True)
+#     # cartProduct=models.ForeignKey(CartProfile,on_delete=models.CASCADE,null=True, blank=True)
+#     # address = models.ForeignKey(Address, on_delete=models.CASCADE)
+#     # date = models.DateTimeField(auto_now_add=True)
+#     # quantity = models.PositiveIntegerField(default=1)
+#     # ammount = models.PositiveIntegerField()
+#     # shipPrice = models.PositiveIntegerField(default=50)
+#     # totalAmmount = models.PositiveIntegerField(default=0)
+
+ 
+#     status = models.CharField(max_length=100, default='Pendiing')
+#     selOrderStatus = models.CharField(
+#         max_length=100,
+#         null=True,
+#         blank=True,
+#     )
+
+# # ! CURRENT ORDER
+# class OrderCurrent(models.Model):
+#     id = models.UUIDField(
+#         primary_key=True,
+#     )
+#     orderSeller = models.ForeignKey(Order, on_delete=models.CASCADE)
+#     orderStatus = models.CharField(
+#         max_length=100,
+        
+#         default="OrderConfirm",
+#         null=True,
+#         blank=True,
+#     )
+
+
+# #! Success ORDER
+# class OrderSuccess(models.Model):
+#     id = models.UUIDField(
+#         primary_key=True,
+#     )
+#     orderSeller = models.ForeignKey(Order, on_delete=models.CASCADE)
+
+
+# # !CANCEL ORDER
+# class OrderCancel(models.Model):
+#     id = models.UUIDField(
+#         primary_key=True,
+#     )
+#     upload = models.ForeignKey(
+#         Order, on_delete=models.CASCADE, null=True, blank=True
+#     )
+#     cancelby = models.CharField(max_length=50,null=True, blank=True)
+   
+
+class Order(models.Model):
     id = models.UUIDField(
         primary_key=True,
         editable=False,
-        default=uuid.uuid4,
+        default=uuid.uuid4
     )
+    upload= models.ForeignKey('CustomUser',  on_delete=models.CASCADE)
+    cartUpload = models.ForeignKey('ProfileCart', on_delete=models.CASCADE)
+
     status = models.CharField(max_length=100, default='Pendiing')
     selOrderStatus = models.CharField(
         max_length=100,
         null=True,
         blank=True,
     )
-
-# ! CURRENT ORDER
-class OrderCurrent(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-    )
-    orderSeller = models.ForeignKey(Order, on_delete=models.CASCADE)
-    orderStatus = models.CharField(
-        max_length=100,
-        
-        default="OrderConfirm",
-        null=True,
-        blank=True,
-    )
+    address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True)
 
 
-#! Success ORDER
-class OrderSuccess(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-    )
-    orderSeller = models.ForeignKey(Order, on_delete=models.CASCADE)
+    ammount =  models.FloatField(default=0)
+    shipPrice =  models.FloatField(default=50)
+    totalAmmount =  models.FloatField(default=0)
 
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    ref_code = models.CharField(max_length=20, blank=True, null=True)
+    
+    transcationId=models.CharField(max_length=30, blank=True, null=True)
+    payment = models.ForeignKey(
+        'Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    coupon = models.ForeignKey(
+        'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+    being_delivered = models.BooleanField(default=False)
+    received = models.BooleanField(default=False)
+    refund_requested = models.BooleanField(default=False)
+    refund_granted = models.BooleanField(default=False)
 
-# !CANCEL ORDER
-class OrderCancel(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-    )
-    upload = models.ForeignKey(
-        Order, on_delete=models.CASCADE, null=True, blank=True
-    )
-    cancelby = models.CharField(max_length=50,null=True, blank=True)
-   
+    
+    def __str__(self):
+        return f"cartID ={self.id}user={self.upload}"
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.ammount =self.cartUpload.ammount
+            if self.ammount<499:
+                self.shipPrice=70
+                self.totalAmmount=self.ammount + self.shipPrice
+            else:
+                self.shipPrice=0
+                self.totalAmmount=self.ammount 
 
+        else:
+            self.ammount =self.cartUpload.ammount
+            if self.ammount<499:
+                self.shipPrice=70
+                self.totalAmmount=self.ammount + self.shipPrice
+            else:
+                self.shipPrice=0
+                self.totalAmmount=self.ammount 
 
+        return super().save(*args, **kwargs)
 
 
 
@@ -446,3 +517,38 @@ class Notification(models.Model):
     checked=models.BooleanField(default=False)
     title = models.CharField(max_length=100,blank=True,null=True)
     msg = models.TextField()
+
+
+
+
+class Payment(models.Model):
+    stripe_charge_id = models.CharField(max_length=50)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.SET_NULL, blank=True, null=True)
+    amount = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.user)
+
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=15)
+    amount = models.FloatField()
+
+    def __str__(self):
+        return self.code
+
+
+class Refund(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    reason = models.TextField()
+    accepted = models.BooleanField(default=False)
+    email = models.EmailField()
+
+    def __str__(self):
+        return f"{self.pk}"
+
+
+
+

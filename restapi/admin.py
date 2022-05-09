@@ -104,45 +104,49 @@ class WishListProductAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
-        "id","seller","customer",
-        "status",
-        "product",
-        "address",
-        "ammount",
-        "quantity",
+        "id",
+        # "seller","customer",
+        "status","totalAmmount","cartUpload"
+        # # "product",
+        # "address",
+        # "ammount",
+        # "quantity",
         
     )
 
 
 # !CURRENT ORDER
-@admin.register(OrderCurrent)
-class OrderCurrentAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "orderStatus",
+# @admin.register(OrderCurrent)
+# class OrderCurrentAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "id",
+#         "orderStatus",
       
-        # "upload",
-    )
+#         # "upload",
+#     )
 
 
 # ! SUCCESS ORDERKEY
-@admin.register(OrderSuccess)
-class OrderSuccessAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "orderSeller",
+# @admin.register(OrderSuccess)
+# class OrderSuccessAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "id",
+#         "orderSeller",
     
-        # "upload",
-    )
+#         # "upload",
+#     )
 
 
 # Cancel Order
-@admin.register(OrderCancel)
-class OrderCancelAdmin(admin.ModelAdmin):
-    list_display = ("id", "cancelby")  
+# @admin.register(OrderCancel)
+# class OrderCancelAdmin(admin.ModelAdmin):
+#     list_display = ("id", "cancelby")  
 
 
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ("id", "sender", "recevier", "checked","msg")  
+
+
+
