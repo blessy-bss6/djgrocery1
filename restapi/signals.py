@@ -33,19 +33,29 @@ def save_CartProfile(sender, instance, created, **kwargs):
         
         ammountList=[]
         ammountData=0
+
+        offPriceList=[]
+        offPriceData=0 
         for p in prodList:
           ammountList.append(p.discountPrice)
+          offPriceList.append(p.offPrice)
 
         for ele in range(0, len(ammountList)):
             ammountData = ammountData + ammountList[ele]
+        
+        for e in range(0, len(offPriceList)):
+            offPriceData = offPriceData + offPriceList[e]
+        
+        
+        
 
         if ammountData >499:
             ProfileCart.objects.update_or_create(
-            upload=instance.upload, defaults= {'ammount':ammountData, 'shipPrice':0, 'totalAmmount':ammountData })
+            upload=instance.upload, defaults= {'ammount':ammountData, 'shipPrice':0, 'totalAmmount':ammountData, 'offPrice':offPriceData,'seller':instance.product.upload })
         
         else:
             ProfileCart.objects.update_or_create(
-            upload=instance.upload, defaults= {'ammount':ammountData,'shipPrice':70, 'totalAmmount':ammountData+70 })
+            upload=instance.upload, defaults= {'ammount':ammountData,'shipPrice':70, 'totalAmmount':ammountData+70,'offPrice':offPriceData ,'seller':instance.product.upload})
         
 
 
@@ -73,4 +83,14 @@ def save_WishListProfile(sender, instance, created, **kwargs):
         else:
             ProfileWishList.objects.update_or_create(
             upload=instance.upload, defaults= {'ammount':ammountData,'shipPrice':70, 'totalAmmount':ammountData+70 })
-        
+
+
+# automatic profile
+@receiver(post_save, sender=Order)
+def save_order(sender, instance, created, **kwargs):
+    if created:
+        cartList =CartProduct.objects.filter(upload=instance.upload) 
+        # orderList =OrderItem.objects.filter(upload=self.upload) 
+       
+        for i in cartList:
+            OrderItem.objects.create(product=i.product, upload=instance.upload ,order_id=instance.id,seller=i.product.upload, address=instance.address)

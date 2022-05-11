@@ -159,7 +159,10 @@ class AddOrderSer(serializers.ModelSerializer):
     class Meta:
         model = Order
         # fields = ['quantity','product']
-        fields = ['quantity','address', "customer",'seller','product']
+        fields = [ "address",
+            "transcationId",
+            "upload",
+            "cartUpload"]
         # depth = 2
 
 
@@ -175,8 +178,15 @@ class OrderSer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = "__all__"
+       
         depth = 3
 
+class OrderItemSer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = "__all__"
+        depth=2
+    
 
 class NotificationSer(serializers.ModelSerializer):
     class Meta:

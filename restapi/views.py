@@ -640,17 +640,19 @@ class OrderView(APIView):
     # !  ORDER REQUEST DATA
     def post(self, request):
         data = request.data
-        cart=CartProduct.objects.filter(upload=request.user.id)
-        cartProf =ProfileCart.objects.filter(upload= request.user.id)
-        print(cart)
+        cart=CartProduct.objects.filter(upload=request.user.id) 
+        cartProf =ProfileCart.objects.get(upload= request.user.id)
+        print(cartProf)
+        print(cartProf.id)
 
-        # while True:
-        #     new_order = {
-        #         "product": i.product.id,
-        #         "address": data.get("address"),
-        #         "quantity": i.quantity,
-        #         "customer": request.user.id,
-        #         "seller": i.product.upload.id  }
+        new_order={
+            "address": data.get("address"),
+            "transcationId":data.get("transcationId"),
+            "upload":request.user.id,
+            "cartUpload":cartProf.id
+        }
+
+        
 
         
         # for i in cart:
@@ -663,35 +665,40 @@ class OrderView(APIView):
             
             # print(new_order)
             
-        print(cartProf)
+        
         # print(cartProf)
-        print(cart.length)
-            # serializer = AddOrderSer(data=new_order)
+        # print(cart.length)
+        serializer = AddOrderSer(data=new_order)
             
-            # if serializer.is_valid(raise_exception=True):
-            #     serializer.save()
-            #     user = serializer.save()
-            #     return Response(
-            #         { 'success':1, 
-            #         "stateCode": 200,
-            #         "msg": "enter data",
-            #         }
-            #     )
-        return Response( {   'success': 0,"data" :serializer.errors, } )
+        if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                user = serializer.save()
+                return Response(
+                    { 'success':1, 
+                    "stateCode": 200,
+                    "msg": "enter data",
+                    }
+                )
+        return Response( {'success': 0,"data" :serializer.errors, } )
+        # return Response( {'success': 0,"data" :'No Data', } )
 
         # return Response('Order Wrong', )
 
     # ! CURRENT ORDER data
     def get(self, request):
-        usr = request.user
+        # usr = request.user
       
 
-        order =Order.objects.filter(customer=usr.id)
+        order =Order.objects.filter(upload=request.user.id)
+        orderProd=OrderItem.objects.filter(upload=request.user.id)
         # print(order)
 
         try:
             ser = OrderSer(order, many=True)
-            alldata = {"data":ser.data,  'success':1, }
+            prodSer=OrderItemSer(orderProd,many=True)
+            # print('serialiser ',ser)
+            # print('serialiser ',prodSer)
+            alldata = {"data":ser.data, "orderProd" :prodSer.data , 'success':1, }
             # print(alldata)
 
         except:
@@ -706,7 +713,7 @@ class OrderView(APIView):
         print(cus)
         if Order.objects.filter(pk=idt).exists():
                 card = Order.objects.get(pk=idt)
-                OrderCancel.objects.create()
+               
                 card.delete()
                 res = {  'success':1, "msg": " data delete"}
                 return Response(res)

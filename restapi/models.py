@@ -229,6 +229,8 @@ class CartProduct(models.Model):
     discountPrice = models.FloatField(default=0)
     date = models.DateTimeField(auto_now_add=True)
 
+    offPrice= models.FloatField(default=0)
+
     def user_id(self):
      return self.id.__str__()
 
@@ -237,9 +239,11 @@ class CartProduct(models.Model):
         if not self.pk:
             self.salesPrice =self.product.salesPrice * self.quantity
             self.discountPrice=self.product.discountPrice * self.quantity
+            self.offPrice=self.salesPrice -self.discountPrice
         else:
             self.salesPrice =self.product.salesPrice * self.quantity
             self.discountPrice=self.product.discountPrice * self.quantity
+            self.offPrice=self.salesPrice -self.discountPrice
 
         return super().save(*args, **kwargs)
 
@@ -252,11 +256,13 @@ class CartProduct(models.Model):
 # !Cart Profile
 class ProfileCart(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
-    upload=models.OneToOneField(CustomUser,on_delete=models.CASCADE,null=True,blank=True)
+    upload=models.OneToOneField(CustomUser,related_name='customer' ,on_delete=models.CASCADE,null=True,blank=True)
     cartUpload=models.ForeignKey(CartProduct, on_delete=models.CASCADE, blank=True, null=True)
     ammount =  models.FloatField(default=0)
     shipPrice =  models.FloatField(default=50)
     totalAmmount =  models.FloatField(default=0)
+    offPrice= models.FloatField(default=0)
+    seller= models.ForeignKey(CustomUser, related_name='seller' ,on_delete=models.CASCADE,blank=True, null=True)
     
     def __str__(self):
         return f"cartID ={self.id}user={self.upload}"
@@ -412,39 +418,41 @@ class ProfileWishList(models.Model):
 #         blank=True,
 #     )
 
-# # ! CURRENT ORDER
-# class OrderCurrent(models.Model):
-#     id = models.UUIDField(
-#         primary_key=True,
-#     )
-#     orderSeller = models.ForeignKey(Order, on_delete=models.CASCADE)
-#     orderStatus = models.CharField(
-#         max_length=100,
-        
-#         default="OrderConfirm",
-#         null=True,
-#         blank=True,
-#     )
+class OrderItem(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        editable=False,
+        default=uuid.uuid4
+    ) 
+    upload = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    product= models.ForeignKey('Product', on_delete=models.CASCADE)
+    order_id= models.UUIDField(editable=False,
+        default=uuid.uuid4 ,null=True, blank=True
+    )
+    seller= models.ForeignKey('CustomUser', related_name='sellerOrderItem', on_delete=models.CASCADE,null=True,
+        blank=True)
+    status = models.CharField(max_length=100, default='Pending')
+    selOrderStatus = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+    )
+    address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True)
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    ref_code = models.CharField(max_length=20, blank=True, null=True)
+
+    coupon = models.ForeignKey(
+        'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+    being_delivered = models.BooleanField(default=False)
+    received = models.BooleanField(default=False)
+    refund_requested = models.BooleanField(default=False)
+    refund_granted = models.BooleanField(default=False)
+    
+    
 
 
-# #! Success ORDER
-# class OrderSuccess(models.Model):
-#     id = models.UUIDField(
-#         primary_key=True,
-#     )
-#     orderSeller = models.ForeignKey(Order, on_delete=models.CASCADE)
 
-
-# # !CANCEL ORDER
-# class OrderCancel(models.Model):
-#     id = models.UUIDField(
-#         primary_key=True,
-#     )
-#     upload = models.ForeignKey(
-#         Order, on_delete=models.CASCADE, null=True, blank=True
-#     )
-#     cancelby = models.CharField(max_length=50,null=True, blank=True)
-   
 
 class Order(models.Model):
     id = models.UUIDField(
@@ -452,16 +460,18 @@ class Order(models.Model):
         editable=False,
         default=uuid.uuid4
     )
-    upload= models.ForeignKey('CustomUser',  on_delete=models.CASCADE)
+    upload= models.ForeignKey('CustomUser', related_name='customerOrder', on_delete=models.CASCADE)
+    # seller= models.ForeignKey('CustomUser', related_name='sellerOrder', on_delete=models.CASCADE)
     cartUpload = models.ForeignKey('ProfileCart', on_delete=models.CASCADE)
 
-    status = models.CharField(max_length=100, default='Pendiing')
+    status = models.CharField(max_length=100, default='Pending')
     selOrderStatus = models.CharField(
         max_length=100,
         null=True,
         blank=True,
     )
     address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True)
+    orderItem = models.ForeignKey(OrderItem, on_delete=models.CASCADE,null=True,blank=True)
 
 
     ammount =  models.FloatField(default=0)
@@ -487,7 +497,10 @@ class Order(models.Model):
         return f"cartID ={self.id}user={self.upload}"
     
     def save(self, *args, **kwargs):
+        # self.seller=self.cartUpload.cartUpload.product.upload
+    
         if not self.pk:
+            
             self.ammount =self.cartUpload.ammount
             if self.ammount<499:
                 self.shipPrice=70
@@ -506,14 +519,25 @@ class Order(models.Model):
                 self.totalAmmount=self.ammount 
 
         return super().save(*args, **kwargs)
+    
+    def get_cartProdList(self):
+        usr=self.upload
+        cartList =OrderItem.objects.filter(order_id=self.id) 
+        # print(cartList)
+        prodList=[]
+        
+        for p in cartList:
+            # print(p.product.title)
+            prodList.append(p.product.title)
+        return f' {prodList }'
 
 
 
 # ! NOTIFICATION MODEl
 class Notification(models.Model):
     id = models.UUIDField( primary_key=True, editable=False,default=uuid.uuid4)
-    sender=models.ForeignKey(CustomUser, on_delete=models.CASCADE,blank=True,null=True, related_name="customer")
-    recevier = models.ForeignKey(CustomUser, on_delete=models.CASCADE,blank=True,null=True, related_name="seller")
+    sender=models.ForeignKey(CustomUser, on_delete=models.CASCADE,blank=True,null=True, related_name="customerNotification")
+    recevier = models.ForeignKey(CustomUser, on_delete=models.CASCADE,blank=True,null=True, related_name="sellerNotification")
     checked=models.BooleanField(default=False)
     title = models.CharField(max_length=100,blank=True,null=True)
     msg = models.TextField()

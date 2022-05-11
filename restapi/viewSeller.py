@@ -104,10 +104,10 @@ class SelProductView(APIView):
         # pic1 = request.FILES['pic1']
 
                 
-        print(pic)
-        print(pic1)
-        print(pic2)
-        print(pic3)
+        # print(pic)
+        # print(pic1)
+        # print(pic2)
+        # print(pic3)
         
         cus = Product.objects.get(pk=idt)
         new_prod = {
@@ -125,7 +125,7 @@ class SelProductView(APIView):
         serializer = AddProductSer(cus, data=new_prod) 
         serializer.is_valid(raise_exception=True)
 
-        print('idt')
+        # print('idt')
         Product.objects.update_or_create(id=idt,upload=usr, defaults= {
             "title": data.get("title"),
             "description": data.get("description"),
@@ -178,12 +178,16 @@ class SelOrderView(APIView):
     
     # ! CURRENT ORDER data
     def get(self, request):
-        usr = request.user
-        order =Order.objects.filter(seller=request.user.id)
+        orderI=OrderItem.objects.filter(upload=request.user.id)
+        order =Order.objects.filter(upload=request.user.id)
+        print(orderI
+        )
+        for i in order:
+            print(i.id)
         try:
            ser = OrderSer(order, many=True)
            alldata = ser.data
-            # print(alldata)
+        #    print(alldata)
         except:
             alldata = ser.errors
 
@@ -203,7 +207,7 @@ class SelOrderView(APIView):
      
         if data.get("status")=="Decline":
             OrderCancel.objects.create(id=cus.id,cancelby="seller")
-            Notification.objects.create(sender=cus.seller.upload, recevier=cus.customer.upload,msg="Order Cancel By User")
+            # Notification.objects.create(sender=cus.seller.upload, recevier=cus.customer.upload,msg="Order Cancel By User")
             cus.delete()
             res = {'success':1, "msg": " data delete"}
             return Response(res)
@@ -214,7 +218,7 @@ class SelOrderView(APIView):
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 user = serializer.save()
-                Notification.objects.create(sender=cus.seller.upload, recevier=cus.customer.upload,msg=data.get("selOrderStatus"))
+                # Notification.objects.create(sender=cus.seller.upload, recevier=cus.customer.upload,msg=data.get("selOrderStatus"))
                 return Response(
                     { 'success':1, 
                     "stateCode": 200,

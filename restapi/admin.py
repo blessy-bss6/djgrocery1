@@ -89,7 +89,7 @@ class CartProductAdmin(admin.ModelAdmin):
 # Cart Profile ADMIN
 @admin.register(ProfileCart)
 class CartProfileAdmin(admin.ModelAdmin):
-      list_display = ("id", "upload",  "ammount","totalAmmount" ,'get_cartList' )
+      list_display = ("id", "upload",  "seller", "ammount","totalAmmount" ,'get_cartList' )
 
 
 # ! WishList 
@@ -104,15 +104,16 @@ class WishListProductAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
-        # "seller","customer",
-        "status","totalAmmount","cartUpload"
-        # # "product",
-        # "address",
-        # "ammount",
-        # "quantity",
-        
-    )
+        "id","status","upload", "transcationId","totalAmmount","cartUpload", 'get_cartProdList',)
+
+
+
+# ! ALL ORDER 
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = (
+        "id","product", "seller","upload","order_id" )
+
 
 
 # !CURRENT ORDER
