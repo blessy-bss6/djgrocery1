@@ -222,8 +222,11 @@ class CartProduct(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     upload = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    cartProfile=models.ForeignKey('ProfileCart', on_delete=models.CASCADE, blank=True, null=True)
     # product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+
+
    
     salesPrice = models.FloatField(default=0)
     discountPrice = models.FloatField(default=0)
@@ -425,10 +428,11 @@ class OrderItem(models.Model):
         default=uuid.uuid4
     ) 
     upload = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
-    product= models.ForeignKey('Product', on_delete=models.CASCADE)
+    product= models.ForeignKey('Product', on_delete=models.CASCADE,null=True, blank=True)
     order_id= models.UUIDField(editable=False,
         default=uuid.uuid4 ,null=True, blank=True
     )
+    cartUpload = models.ForeignKey('ProfileCart', on_delete=models.CASCADE, null=True, blank=True)
     seller= models.ForeignKey('CustomUser', related_name='sellerOrderItem', on_delete=models.CASCADE,null=True,
         blank=True)
     status = models.CharField(max_length=100, default='Pending')
@@ -437,6 +441,11 @@ class OrderItem(models.Model):
         null=True,
         blank=True,
     )
+    
+    ammount =  models.FloatField(default=0)
+    shipPrice =  models.FloatField(default=50)
+    totalAmmount =  models.FloatField(default=0)
+
     address = models.ForeignKey(Address, on_delete=models.CASCADE,null=True,blank=True)
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(null=True, blank=True)
@@ -448,6 +457,31 @@ class OrderItem(models.Model):
     received = models.BooleanField(default=False)
     refund_requested = models.BooleanField(default=False)
     refund_granted = models.BooleanField(default=False)
+
+
+    # def save(self, *args, **kwargs):
+    #     # self.seller=self.cartUpload.cartUpload.product.upload
+    
+    #     if not self.pk:
+            
+    #         self.ammount =self.cartUpload.ammount
+    #         if self.ammount<499:
+    #             self.shipPrice=70
+    #             self.totalAmmount=self.ammount + self.shipPrice
+    #         else:
+    #             self.shipPrice=0
+    #             self.totalAmmount=self.ammount 
+
+    #     else:
+    #         self.ammount =self.cartUpload.ammount
+    #         if self.ammount<499:
+    #             self.shipPrice=70
+    #             self.totalAmmount=self.ammount + self.shipPrice
+    #         else:
+    #             self.shipPrice=0
+    #             self.totalAmmount=self.ammount 
+
+    #     return super().save(*args, **kwargs)
     
     
 
@@ -496,29 +530,29 @@ class Order(models.Model):
     def __str__(self):
         return f"cartID ={self.id}user={self.upload}"
     
-    def save(self, *args, **kwargs):
-        # self.seller=self.cartUpload.cartUpload.product.upload
+    # def save(self, *args, **kwargs):
+    #     # self.seller=self.cartUpload.cartUpload.product.upload
     
-        if not self.pk:
+    #     if not self.pk:
             
-            self.ammount =self.cartUpload.ammount
-            if self.ammount<499:
-                self.shipPrice=70
-                self.totalAmmount=self.ammount + self.shipPrice
-            else:
-                self.shipPrice=0
-                self.totalAmmount=self.ammount 
+    #         self.ammount =self.cartUpload.ammount
+    #         if self.ammount<499:
+    #             self.shipPrice=70
+    #             self.totalAmmount=self.ammount + self.shipPrice
+    #         else:
+    #             self.shipPrice=0
+    #             self.totalAmmount=self.ammount 
 
-        else:
-            self.ammount =self.cartUpload.ammount
-            if self.ammount<499:
-                self.shipPrice=70
-                self.totalAmmount=self.ammount + self.shipPrice
-            else:
-                self.shipPrice=0
-                self.totalAmmount=self.ammount 
+    #     else:
+    #         self.ammount =self.cartUpload.ammount
+    #         if self.ammount<499:
+    #             self.shipPrice=70
+    #             self.totalAmmount=self.ammount + self.shipPrice
+    #         else:
+    #             self.shipPrice=0
+    #             self.totalAmmount=self.ammount 
 
-        return super().save(*args, **kwargs)
+    #     return super().save(*args, **kwargs)
     
     def get_cartProdList(self):
         usr=self.upload

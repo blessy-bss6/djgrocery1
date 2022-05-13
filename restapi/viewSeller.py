@@ -178,18 +178,19 @@ class SelOrderView(APIView):
     
     # ! CURRENT ORDER data
     def get(self, request):
-        orderI=OrderItem.objects.filter(upload=request.user.id)
-        order =Order.objects.filter(upload=request.user.id)
-        print(orderI
-        )
-        for i in order:
-            print(i.id)
+        orderI=OrderItem.objects.filter(seller=request.user)
+        order =Order.objects.filter(upload=request.user.id) 
+        print(orderI)
+        # for i in order:
+        #     print(i.id)
         try:
            ser = OrderSer(order, many=True)
-           alldata = ser.data
+           ser2 = OrderItemSer(orderI, many=True)
+           alldata = {"data":ser.data, "orderItem":ser2.data,"status":1}
         #    print(alldata)
         except:
-            alldata = ser.errors
+            # alldata = ser.errors
+            alldata= {"data":ser.errors,"status":0}
 
         return Response(alldata)
 
@@ -197,7 +198,7 @@ class SelOrderView(APIView):
     def put(self, request,pk=None):
         data = request.data
         idt = data.get("id")
-        cus = Order.objects.get(pk=idt)
+        cus = OrderItem.objects.get(pk=idt)
        
         usr=request.user
         new_order = {
@@ -206,7 +207,7 @@ class SelOrderView(APIView):
         }
      
         if data.get("status")=="Decline":
-            OrderCancel.objects.create(id=cus.id,cancelby="seller")
+            # OrderCancel.objects.create(id=cus.id,cancelby="seller")
             # Notification.objects.create(sender=cus.seller.upload, recevier=cus.customer.upload,msg="Order Cancel By User")
             cus.delete()
             res = {'success':1, "msg": " data delete"}
