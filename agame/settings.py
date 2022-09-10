@@ -10,9 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-(pu_bf)74=$e@r-_s8(ovl726--5tw*f(vw0!l7cmdfaf8@)%7'
-with open(os.path.join(BASE_DIR, "secert.txt")) as f:
-    SECRET_KEY = f.read().strip()
+SECRET_KEY = 'django-insecure-(pu_bf)74=$e@r-_s8(ovl726--5tw*f(vw0!l7cmdfaf8@)%7'
+# with open(os.path.join(BASE_DIR, "secert.txt")) as f:
+#     SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
