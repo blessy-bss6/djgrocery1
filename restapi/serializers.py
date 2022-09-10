@@ -178,14 +178,13 @@ class OrderSer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = "__all__"
-       
         depth = 3
 
 class OrderItemSer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = "__all__"
-        depth=2
+        depth=3
     
 
 class NotificationSer(serializers.ModelSerializer):

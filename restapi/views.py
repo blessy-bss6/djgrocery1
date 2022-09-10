@@ -237,7 +237,7 @@ class ProfileView(APIView):
         #     mat = Profile.objects.update_or_create(id=request.user.id,upload= request.user, defaults={'fullname':fullname,'gender':gender,'pic':pic})
        
         # else:
-        #     cus=Profile.objects.get(upload=request.user)
+        cus=Profile.objects.get(upload=request.user)
          
         #     mat = Profile.objects.update_or_create(id=request.user.id,upload=request.user, defaults={'fullname':fullname,'gender':gender,'pic':cus.pic})
         Profile.objects.update_or_create(id=request.user.id,upload=request.user, defaults={'fullname':fullname,'gender':gender,'pic':cus.pic if pic==None else pic })
@@ -609,10 +609,10 @@ class WishListView(APIView):
         idt= request.data.get("id") 
         cus = WishListProduct.objects.get(pk=idt)
         # print(cus)
-        if CartProduct.objects.filter(Q(upload__exact=request.user) & Q(product__exact=cus.product.id )):
-                usrCart = WishListProduct.objects.filter(upload=request.user.id)
-                ser = WishListSer(usrCart,many=True)
-                return Response({ "data":ser.data, 'success':1,"stateCode": 200, "msg": "Product Already Exits"},201)
+        # if CartProduct.objects.filter(Q(upload__exact=request.user) & Q(product__exact=cus.product.id )):
+        #         usrCart = WishListProduct.objects.filter(upload=request.user.id)
+        #         ser = WishListSer(usrCart,many=True)
+        #         return Response({ "data":ser.data, 'success':1,"stateCode": 200, "msg": "Product Already Exits"},201)
         if WishListProduct.objects.filter(pk=idt).exists():
                 card = WishListProduct.objects.get(pk=idt)
                 card.delete()
